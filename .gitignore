@@ -1,0 +1,5 @@
+bin/
+obj/
+pacman.layout
+pacman.depend
+pacman.cbp
