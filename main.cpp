@@ -53,6 +53,15 @@ public:
         }
     }
 
+    void AI(SDL_Rect ball){
+        if(body.y+body.h/2-ball.h/2<ball.y){
+            mdir = 1;
+        }
+        if(body.y+body.h/2+ball.h/2>ball.y+ball.h){
+            mdir = -1;
+        }
+    }
+
     void update(){
         body.y+=mdir;
     }
