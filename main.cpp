@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <iostream>
+#include <conio.h>
 
 class player{
 private:
@@ -12,7 +13,15 @@ public:
         if(p1){
             body = {20,225, 10,30};
         }else{
-            body = {430,225, 10,30};
+            body = {450,225, 10,30};
+        }
+        mdir = 0;
+    }
+    void reinit(){
+        if(p1){
+            body = {20,225, 10,30};
+        }else{
+            body = {450,225, 10,30};
         }
         mdir = 0;
     }
@@ -20,17 +29,33 @@ public:
         if(event->type == SDL_KEYDOWN){
             if(p1){
                 if(event->key.keysym.sym == SDLK_w){
-                    mdir = -1;
+                    if(body.y>0){
+                        mdir = -1;
+                    }else{
+                        mdir = 0;
+                    }
                 }if(event->key.keysym.sym == SDLK_s){
-                    mdir = 1;
+                    if(body.y<450){
+                        mdir = 1;
+                    }else{
+                        mdir = 0;
+                    }
                 }if(event->key.keysym.sym == SDLK_w && event->key.keysym.sym == SDLK_s){
                     mdir = 0;
                 }
             }else{
                 if(event->key.keysym.sym == SDLK_i){
-                    mdir = -1;
+                    if(body.y>0){
+                        mdir = -1;
+                    }else{
+                        mdir = 0;
+                    }
                 }if(event->key.keysym.sym == SDLK_k){
-                    mdir = 1;
+                    if(body.y<450){
+                        mdir = 1;
+                    }else{
+                        mdir = 0;
+                    }
                 }if(event->key.keysym.sym == SDLK_i && event->key.keysym.sym == SDLK_k){
                     mdir = 0;
                 }
@@ -53,12 +78,38 @@ public:
         }
     }
 
-    void AI(SDL_Rect ball){
-        if(body.y+body.h/2-ball.h/2<ball.y){
-            mdir = 1;
-        }
-        if(body.y+body.h/2+ball.h/2>ball.y+ball.h){
-            mdir = -1;
+    void AI(SDL_Rect ball, short dirX){
+        if(p1){
+            //if(dirX==-1){
+                if(body.y+body.h/2-ball.h/2<ball.y){
+                    mdir = 1;
+                }
+                if(body.y+body.h/2+ball.h/2>ball.y+ball.h){
+                    mdir = -1;
+                }
+//            }else{
+//                mdir = 0;
+//            }
+        }else{
+            //if(dirX==1){
+                if(body.y+body.h/2-ball.h/2<ball.y){
+                    if(body.y<450){
+                        mdir = 1;
+                    }else{
+                        mdir = 0;
+                    }
+                }
+                if(body.y+body.h/2+ball.h/2>ball.y+ball.h){
+                    if(body.y>0){
+                        mdir = -1;
+                    }else{
+                        mdir = 0;
+                    }
+                }
+//            }
+//            else{
+//                mdir = 0;
+//            }
         }
     }
 
@@ -79,6 +130,10 @@ private:
     short dirX,dirY;
 public:
     ball(short dirX, short dirY){
+        this->dirX = dirX; this->dirY = dirY;
+        body = {235,235,10,10};
+    }
+    void reinit(short dirX, short dirY){
         this->dirX = dirX; this->dirY = dirY;
         body = {235,235,10,10};
     }
@@ -116,13 +171,13 @@ public:
             }
         }
         if(dirY == 1){
-            body.y+=1;
+            body.y+=2;
             if(body.y+body.h>=480){
                 dirY = -1;
             }
         }
         if(dirY == -1){
-            body.y-=1;
+            body.y-=2;
             if(body.y<=0){
                 dirY = 1;
             }
@@ -133,20 +188,42 @@ public:
         SDL_SetRenderDrawColor(renderer, 255,255,255,255);
         SDL_RenderFillRect(renderer, &body);
     }
+    SDL_Rect* getBody(){return &body;}
+    short getDirX(){return dirX;}
 };
 
 int main(int argc, char* argv[])
 {
+    char opsi;
+    std::cout<<"pvp[y/n/q]?";
+    std::cin>>opsi;
+
+    if(opsi != 'q'){
+
     SDL_Window* window = SDL_CreateWindow("apps", 100,100,480,480,false);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+
+    SDL_RaiseWindow(window);
+    short x,y;
 
     SDL_Event event;
     player player1 = player(true);
     player player2 = player(false);
-    ball mball = ball(-1,0);
+    for(int i = 0; i < 10; i++){
+        srand(SDL_GetTicks()+rand()-rand()/2+101);
+        x = rand()%2==0?-1:1;
+        y = rand()%3-1;
+    }
+    ball mball = ball(x,y);
 
-    int frame = SDL_GetTicks();
+    int frame;
+    bool play = false;
+    frame = SDL_GetTicks();
     while(true){
+        for(int i = 0; i < 10; i++){
+            x = rand()%6>2?-1:1;
+            y = (rand()%100)%3-1;
+        }
         SDL_SetRenderDrawColor(renderer, 0,0,0,255);
         SDL_RenderClear(renderer);
 
@@ -159,13 +236,34 @@ int main(int argc, char* argv[])
             break;
         }
         player1.control(&event);
-        player2.control(&event);
+        if(opsi == 'y'){
+            player2.control(&event);
+        }else{
+            player2.AI(*(mball.getBody()),mball.getDirX());
+        }
 
-        if(SDL_GetTicks()-frame>=1000/120){
-            player1.update();
-            player2.update();
-            mball.update(player1.getBody(), player2.getBody());
-            frame = SDL_GetTicks();
+        if(SDL_GetTicks()-frame>=3*1000){
+            play = true;
+        }
+
+        if(play){
+            if(SDL_GetTicks()-frame>=1000/120){
+                player1.update();
+                player2.update();
+                mball.update(player1.getBody(), player2.getBody());
+                frame = SDL_GetTicks();
+            }
+        }else{
+            //frame = SDL_GetTicks();
+            player1.reinit();
+            player2.reinit();
+            mball.reinit(x,y);
+        }
+        if(mball.getBody()->x+10<=0){
+            play = false;
+        }
+        if(mball.getBody()->x>=480){
+            play = false;
         }
 
         SDL_RenderPresent(renderer);
@@ -173,6 +271,7 @@ int main(int argc, char* argv[])
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    }
     SDL_Quit();
 
     return 0;
