@@ -16,6 +16,46 @@ public:
         }
         mdir = 0;
     }
+    void control(SDL_Event* event){
+        if(event->type == SDL_KEYDOWN){
+            if(p1){
+                if(event->key.keysym.sym == SDLK_w){
+                    mdir = -1;
+                }if(event->key.keysym.sym == SDLK_s){
+                    mdir = 1;
+                }if(event->key.keysym.sym == SDLK_w && event->key.keysym.sym == SDLK_s){
+                    mdir = 0;
+                }
+            }else{
+                if(event->key.keysym.sym == SDLK_i){
+                    mdir = -1;
+                }if(event->key.keysym.sym == SDLK_k){
+                    mdir = 1;
+                }if(event->key.keysym.sym == SDLK_i && event->key.keysym.sym == SDLK_k){
+                    mdir = 0;
+                }
+            }
+        }
+        if(event->type == SDL_KEYUP){
+            if(p1){
+                if(event->key.keysym.sym == SDLK_w){
+                    mdir = 0;
+                }if(event->key.keysym.sym == SDLK_s){
+                    mdir = 0;
+                }
+            }else{
+                if(event->key.keysym.sym == SDLK_i){
+                    mdir = 0;
+                }if(event->key.keysym.sym == SDLK_k){
+                    mdir = 0;
+                }
+            }
+        }
+    }
+
+    void update(){
+        body.y+=mdir;
+    }
 
     void render(SDL_Renderer* renderer){
         SDL_SetRenderDrawColor(renderer, 255,255,255,255);
@@ -30,6 +70,8 @@ int main(int argc, char* argv[])
 
     SDL_Event event;
     player player1 = player(true);
+
+    int frame = SDL_GetTicks();
     while(true){
         SDL_SetRenderDrawColor(renderer, 0,0,0,255);
         SDL_RenderClear(renderer);
@@ -40,7 +82,12 @@ int main(int argc, char* argv[])
         if(event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)){
             break;
         }
+        player1.control(&event);
 
+        if(SDL_GetTicks()-frame>=1000/120){
+            player1.update();
+            frame = SDL_GetTicks();
+        }
 
         SDL_RenderPresent(renderer);
     }
