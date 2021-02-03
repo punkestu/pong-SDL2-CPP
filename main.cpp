@@ -70,6 +70,26 @@ public:
         SDL_SetRenderDrawColor(renderer, 255,255,255,255);
         SDL_RenderFillRect(renderer, &body);
     }
+    SDL_Rect* getBody()[return &body;]
+};
+
+class ball{
+private:
+    SDL_Rect body;
+    short dirX,dirY;
+public:
+    ball(short dirX, short dirY){
+        this->dirX = dirX; this->dirY = dirY;
+        body = {235,235,10,10};
+    }
+    void update(){
+
+    }
+
+    void render(SDL_Renderer* renderer){
+        SDL_SetRenderDrawColor(renderer, 255,255,255,255);
+        SDL_RenderFillRect(renderer, &body);
+    }
 };
 
 int main(int argc, char* argv[])
